@@ -94,6 +94,13 @@ pub enum RaydiumCpCommands {
         #[arg(short, long, default_value_t = 0)]
         open_time: u64,
     },
+    CreateAmmConfig {
+        index: u16,
+        trade_fee_rate: u64,
+        protocol_fee_rate: u64,
+        fund_fee_rate: u64,
+        create_pool_fee: u64,
+    },
     Deposit {
         pool_id: Pubkey,
         user_token_0: Pubkey,
@@ -143,6 +150,33 @@ fn main() -> Result<()> {
 
     let opts = Opts::parse();
     match opts.command {
+        RaydiumCpCommands::CreateAmmConfig {
+            index,
+            trade_fee_rate,
+            protocol_fee_rate,
+            fund_fee_rate,
+            create_pool_fee,
+        } => {
+            println!("create amm config");
+            let create_amm_config_instr = create_amm_config_instr(
+                &pool_config,
+                index,
+                trade_fee_rate,
+                protocol_fee_rate,
+                fund_fee_rate,
+                create_pool_fee,
+            )?;
+            let signers = vec![&payer];
+            let recent_hash = rpc_client.get_latest_blockhash()?;
+            let txn = Transaction::new_signed_with_payer(
+                &create_amm_config_instr,
+                Some(&payer.pubkey()),
+                &signers,
+                recent_hash,
+            );
+            let signature = send_txn(&rpc_client, &txn, true)?;
+            println!("{}", signature);
+        }
         RaydiumCpCommands::InitializePool {
             mint0,
             mint1,
@@ -150,11 +184,14 @@ fn main() -> Result<()> {
             init_amount_1,
             open_time,
         } => {
+            println!("initialize pool");            
             let (mint0, mint1, init_amount_0, init_amount_1) = if mint0 > mint1 {
                 (mint1, mint0, init_amount_1, init_amount_0)
             } else {
                 (mint0, mint1, init_amount_0, init_amount_1)
             };
+
+            println!("payer: {} path: {} rpc url: {}", payer.pubkey(), pool_config.payer_path, pool_config.http_url);
             let load_pubkeys = vec![mint0, mint1];
             let rsps = rpc_client.get_multiple_accounts(&load_pubkeys)?;
             let token_0_program = rsps[0].clone().unwrap().owner;
@@ -166,8 +203,8 @@ fn main() -> Result<()> {
                 mint1,
                 token_0_program,
                 token_1_program,
-                spl_associated_token_account::get_associated_token_address(&payer.pubkey(), &mint0),
-                spl_associated_token_account::get_associated_token_address(&payer.pubkey(), &mint1),
+                spl_associated_token_account::get_associated_token_address_with_program_id(&payer.pubkey(), &mint0, &spl_token_2022::id()),
+                spl_associated_token_account::get_associated_token_address_with_program_id(&payer.pubkey(), &mint1, &spl_token_2022::id()),
                 raydium_cp_swap::create_pool_fee_reveiver::id(),
                 init_amount_0,
                 init_amount_1,
@@ -267,9 +304,10 @@ fn main() -> Result<()> {
                 pool_state.token_1_vault,
                 user_token_0,
                 user_token_1,
-                spl_associated_token_account::get_associated_token_address(
+                spl_associated_token_account::get_associated_token_address_with_program_id(
                     &payer.pubkey(),
                     &pool_state.lp_mint,
+                    &spl_token_2022::id(),
                 ),
                 lp_token_amount,
                 amount_0_max,
@@ -374,13 +412,15 @@ fn main() -> Result<()> {
                 pool_state.lp_mint,
                 pool_state.token_0_vault,
                 pool_state.token_1_vault,
-                spl_associated_token_account::get_associated_token_address(
+                spl_associated_token_account::get_associated_token_address_with_program_id(
                     &payer.pubkey(),
                     &pool_state.token_0_mint,
+                    &spl_token_2022::id(),
                 ),
-                spl_associated_token_account::get_associated_token_address(
+                spl_associated_token_account::get_associated_token_address_with_program_id(
                     &payer.pubkey(),
                     &pool_state.token_1_mint,
+                    &spl_token_2022::id(),
                 ),
                 user_lp_token,
                 lp_token_amount,
@@ -460,9 +500,10 @@ fn main() -> Result<()> {
                     total_token_0_amount,
                     total_token_1_amount,
                     user_input_token,
-                    spl_associated_token_account::get_associated_token_address(
+                    spl_associated_token_account::get_associated_token_address_with_program_id(
                         &payer.pubkey(),
                         &pool_state.token_1_mint,
+                        &spl_token_2022::id(),
                     ),
                     pool_state.token_0_vault,
                     pool_state.token_1_vault,
@@ -478,9 +519,10 @@ fn main() -> Result<()> {
                     total_token_1_amount,
                     total_token_0_amount,
                     user_input_token,
-                    spl_associated_token_account::get_associated_token_address(
+                    spl_associated_token_account::get_associated_token_address_with_program_id(
                         &payer.pubkey(),
                         &pool_state.token_0_mint,
+                        &spl_token_2022::id(),
                     ),
                     pool_state.token_1_vault,
                     pool_state.token_0_vault,
@@ -614,9 +656,10 @@ fn main() -> Result<()> {
                     total_token_0_amount,
                     total_token_1_amount,
                     user_input_token,
-                    spl_associated_token_account::get_associated_token_address(
+                    spl_associated_token_account::get_associated_token_address_with_program_id(
                         &payer.pubkey(),
                         &pool_state.token_1_mint,
+                        &spl_token_2022::id(),
                     ),
                     pool_state.token_0_vault,
                     pool_state.token_1_vault,
@@ -632,9 +675,10 @@ fn main() -> Result<()> {
                     total_token_1_amount,
                     total_token_0_amount,
                     user_input_token,
-                    spl_associated_token_account::get_associated_token_address(
+                    spl_associated_token_account::get_associated_token_address_with_program_id(
                         &payer.pubkey(),
                         &pool_state.token_0_mint,
+                        &spl_token_2022::id(),
                     ),
                     pool_state.token_1_vault,
                     pool_state.token_0_vault,

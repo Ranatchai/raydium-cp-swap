@@ -45,13 +45,13 @@ export async function setupInitializeTest(
   },
   confirmOptions?: ConfirmOptions
 ) {
-  const [{ token0, token0Program }, { token1, token1Program }] =
-    await createTokenMintAndAssociatedTokenAccount(
-      connection,
-      owner,
-      new Keypair(),
-      transferFeeConfig
-    );
+  // const [{ token0, token0Program }, { token1, token1Program }] =
+  //   await createTokenMintAndAssociatedTokenAccount(
+  //     connection,
+  //     owner,
+  //     owner,
+  //     transferFeeConfig
+  //   );
   const configAddress = await createAmmConfig(
     program,
     connection,
@@ -63,12 +63,13 @@ export async function setupInitializeTest(
     config.create_fee,
     confirmOptions
   );
+  console.log('configAddress', configAddress.toBase58());
   return {
     configAddress,
-    token0,
-    token0Program,
-    token1,
-    token1Program,
+    // token0,
+    // token0Program,
+    // token1,
+    // token1Program,
   };
 }
 
@@ -267,7 +268,7 @@ export async function initialize(
     initAmount0: new BN(10000000000),
     initAmount1: new BN(20000000000),
   },
-  createPoolFee = new PublicKey("DNXgeM9EiiaAbaWvwjHj9fQQLAX5ZsfHyvmYUNRAdNC8")
+  createPoolFee = new PublicKey("Bzsi8fW9x4ahRgC8xNdxrr5NNWm8DBSrQnE322vi1YWH")
 ) {
   const [auth] = await getAuthAddress(program.programId);
   const [poolAddress] = await getPoolAddress(
@@ -316,6 +317,22 @@ export async function initialize(
     false,
     token1Program
   );
+  console.log('poolAddress', poolAddress.toBase58());
+  console.log('creator', creator.publicKey.toBase58());
+  console.log('creatorToken0', creatorToken0.toBase58());
+  console.log('creatorToken1', creatorToken1.toBase58());
+  console.log('creatorLpToken', creatorLpTokenAddress.toBase58());
+  console.log('token0', token0.toBase58());
+  console.log('token1', token1.toBase58());
+  console.log('lpMintAddress', lpMintAddress.toBase58());
+  console.log('vault0', vault0.toBase58());
+  console.log('vault1', vault1.toBase58());
+  console.log('createPoolFee', createPoolFee.toBase58());
+  console.log('observationAddress', observationAddress.toBase58());
+  console.log('tokenProgram', TOKEN_PROGRAM_ID.toBase58());
+  console.log('token0Program', token0Program.toBase58());
+  console.log('token1Program', token1Program.toBase58());
+
   await program.methods
     .initialize(initAmount.initAmount0, initAmount.initAmount1, new BN(0))
     .accounts({
@@ -340,6 +357,8 @@ export async function initialize(
       rent: SYSVAR_RENT_PUBKEY,
     })
     .rpc(confirmOptions);
+
+  console.log('poolAddress', poolAddress.toBase58());
   const poolState = await program.account.poolState.fetch(poolAddress);
   return { poolAddress, poolState };
 }

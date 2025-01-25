@@ -8,4 +8,6 @@ test-ledger
 .vscode
 .yarn
 Makefile
-
+id.json
+new-token/
+new-token/**

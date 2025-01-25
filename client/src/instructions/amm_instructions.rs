@@ -12,6 +12,43 @@ use std::rc::Rc;
 
 use super::super::{read_keypair_file, ClientConfig};
 
+pub fn create_amm_config_instr(
+    config: &ClientConfig,
+    index: u16,
+    trade_fee_rate: u64,
+    protocol_fee_rate: u64,
+    fund_fee_rate: u64,
+    create_pool_fee: u64,
+) -> Result<Vec<Instruction>> {
+    let payer = read_keypair_file(&config.payer_path)?;
+    let url = Cluster::Custom(config.http_url.clone(), config.ws_url.clone());
+    // Client.
+    let client = Client::new(url, Rc::new(payer));
+    let program = client.program(config.raydium_cp_program)?;
+    let amm_config_index = 0u16;
+    let (amm_config_key, __bump) = Pubkey::find_program_address(
+        &[AMM_CONFIG_SEED.as_bytes(), &amm_config_index.to_be_bytes()],
+        &program.id(),
+    );
+    let instructions = program
+    .request()
+    .accounts(raydium_cp_accounts::CreateAmmConfig {
+        owner: program.payer(),
+        amm_config: amm_config_key,
+        system_program: system_program::id(),
+    })
+    .args(raydium_cp_instructions::CreateAmmConfig {
+        index,
+        trade_fee_rate,
+        protocol_fee_rate,
+        fund_fee_rate,
+        create_pool_fee,
+    })
+    .instructions()?;
+
+    Ok(instructions)
+}
+
 pub fn initialize_pool_instr(
     config: &ClientConfig,
     token_0_mint: Pubkey,
