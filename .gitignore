@@ -9,5 +9,4 @@ test-ledger
 .yarn
 Makefile
 id.json
-new-token/
-new-token/**
+scripts/keypairs/

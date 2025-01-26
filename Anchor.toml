@@ -7,14 +7,14 @@ seeds = false
 skip-lint = false
 
 [programs.localnet]
-raydium_cp_swap = "HEW7NWmUzsYNfNdJRTMaM3RaEFX8JDfdLwDWydkxBAXS"
+raydium_cp_swap = "CPMMQoayoCZGUq4wQRxrPBNrrExU6PLg1eEAXC83KDzv"
 
 [registry]
 url = "https://github.com/raydium-io/raydium-cp-swap"
 
 [provider]
 cluster = "https://staging-rpc.dev2.eclipsenetwork.xyz"
-wallet = "~/.config/solana/id.json"
+wallet = "/Users/ranatchai/.config/solana/id.json"
 
 [workspace]
 members = ["programs/cp-swap"]
@@ -28,10 +28,10 @@ shutdown_wait = 2000
 upgradeable = false
 
 [test.validator]
+bind_address = "0.0.0.0"
 url = "https://staging-rpc.dev2.eclipsenetwork.xyz"
-# rpc_port = 1337                                 # Set JSON RPC on this port, and the next port for the RPC websocket.
-# gossip_port = 1337                              # Gossip port number for the validator.
-# faucet_port = 1337                              # Enable the faucet on this port.
+ledger = ".anchor/test-ledger"
+rpc_port = 8899
 
 [[test.validator.clone]]
 address = "Bzsi8fW9x4ahRgC8xNdxrr5NNWm8DBSrQnE322vi1YWH"

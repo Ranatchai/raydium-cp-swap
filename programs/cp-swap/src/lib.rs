@@ -20,7 +20,7 @@ solana_security_txt::security_txt! {
 }
 
 
-declare_id!("HEW7NWmUzsYNfNdJRTMaM3RaEFX8JDfdLwDWydkxBAXS");
+declare_id!("CPMMQoayoCZGUq4wQRxrPBNrrExU6PLg1eEAXC83KDzv");
 
 pub mod admin {
     use anchor_lang::prelude::declare_id;    
